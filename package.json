@@ -1,0 +1,28 @@
+{
+  "name": "@cagov/11ty-build-system",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "An 11ty plugin to implement @cagov's standard build system for 11ty sites.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "Jon Jensen",
+    "email": "jon.jensen@digital.ca.gov",
+    "url": "https://github.com/xjensen"
+  },
+  "keywords": [
+    "eleventy",
+    "11ty",
+    "build"
+  ],
+  "dependencies": {
+    "minimatch": "^3.0.4",
+    "postcss": "^8.3.9",
+    "rollup": "^2.58.0"
+  },
+  "peerDependencies": {
+    "@11ty/eleventy": "^1.0.0-canary.44"
+  }
+}
