@@ -59,32 +59,32 @@ For your CSS needs, this plugin picks up [PostCSS](https://postcss.org/) files.
 The following example will process a single `postcss.config.js` file in the `src/css` folder of your project.
 
 ```js
-  eleventyConfig.addPlugin(cagovBuildSystem, {
-    postcss: {
-      file: 'src/css/postcss.config.js',
-      watch: ['src/css/**/*']
-    }
-  });
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  postcss: {
+    file: 'src/css/postcss.config.js',
+    watch: ['src/css/**/*']
+  }
+});
 ```
 
 If needed, you may process multiple PostCSS config files. Just supply an array of configurations.
 
 ```js
-  eleventyConfig.addPlugin(cagovBuildSystem, {
-    postcss: [
-      {
-        file: 'src/css/postcss.home.config.js',
-        watch: ['src/css/home/**/*']
-      },
-      {
-        file: 'src/css/postcss.page.config.js',
-        watch: [
-          'src/css/page/**/*',
-          'src/css/page-widget/**/*'
-        ]
-      }
-    ]
-  });
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  postcss: [
+    {
+      file: 'src/css/postcss.home.config.js',
+      watch: ['src/css/home/**/*']
+    },
+    {
+      file: 'src/css/postcss.page.config.js',
+      watch: [
+        'src/css/page/**/*',
+        'src/css/page-widget/**/*'
+      ]
+    }
+  ]
+});
 ```
 
 Each PostCSS configuration supplied to the plugin accepts the following options.
@@ -127,29 +127,29 @@ For Javascript processing, this plugin provides [Rollup](https://rollupjs.org/).
 The following example will process a single `rollup.config.js` file.
 
 ```js
-  eleventyConfig.addPlugin(cagovBuildSystem, {
-    rollup: {
-      file: 'src/js/rollup.config.js',
-      watch: ['src/js/**/*']
-    }
-  });
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  rollup: {
+    file: 'src/js/rollup.config.js',
+    watch: ['src/js/**/*']
+  }
+});
 ```
 
 Like PostCSS, you may specify multiple Rollup configurations in an array.
 
 ```js
-  eleventyConfig.addPlugin(cagovBuildSystem, {
-    rollup: [
-      {
-        file: 'src/js/rollup.es5.config.js',
-        watch: ['src/js/polyfills/**/*']
-      },
-      {
-        file: 'src/js/rollup.all.config.js',
-        watch: ['src/js/**/*']
-      }
-    ]
-  });
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  rollup: [
+    {
+      file: 'src/js/rollup.es5.config.js',
+      watch: ['src/js/polyfills/**/*']
+    },
+    {
+      file: 'src/js/rollup.all.config.js',
+      watch: ['src/js/**/*']
+    }
+  ]
+});
 ```
 
 Note the options for Rollup configs.
@@ -184,11 +184,11 @@ Check the [Rollup documentation](https://rollupjs.org/guide/en/#configuration-fi
 The plugin provides a `beforeBuild` callback function. You may use this to run any code before the 11ty build.
 
 ```js
-  eleventyConfig.addPlugin(cagovBuildSystem, {
-    beforeBuild: () => {
-      // Download files, check APIs, etc.
-    },
-  });
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  beforeBuild: () => {
+    // Download files, check APIs, etc.
+  },
+});
 ```
 
 ## Order of operations
