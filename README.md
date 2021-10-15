@@ -6,7 +6,7 @@ No need to worry about setting up long, multi-step npm scripts. Say goodbye to t
 
 🚧 Work in progress! Use at your peril! 🚧
 
-## Install 
+## Installation 
 
 First, install this plugin into your 11ty project.
 
@@ -22,6 +22,30 @@ const cagovBuildSystem = require('@cagov/11ty-build-system');
 module.exports = function(eleventyConfig) {
   eleventyConfig.addPlugin(cagovBuildSystem, {
     // Your buildConfig options go here, see below.
+  });
+
+  // ...the rest of your project's 11ty config code...
+};
+```
+
+TL;DR: here's a full example of the plugin's options.
+
+```js
+const cagovBuildSystem = require('@cagov/11ty-build-system');
+
+module.exports = function(eleventyConfig) {
+  eleventyConfig.addPlugin(cagovBuildSystem, {
+    postcss: {
+      file: 'src/css/postcss.config.js',
+      watch: ['src/css/**/*']
+    },
+    rollup: {
+      file: 'src/js/rollup.config.js',
+      watch: ['src/js/**/*']
+    },
+    beforeBuild: () => {
+      // Download files, check APIs, etc.
+    }
   });
 
   // ...the rest of your project's 11ty config code...
@@ -172,32 +196,6 @@ The plugin provides a `beforeBuild` callback function. You may use this to run a
 1. The `beforeBuild` callback runs first.
 2. Next, `postcss` and `rollup` configurations run in parallel.
 3. Finally, 11ty performs the rest of its usual build.
-
-## Brining it all togother
-
-Within `.eleventy.js`...
-
-```js
-const cagovBuildSystem = require('@cagov/11ty-build-system');
-
-module.exports = function(eleventyConfig) {
-  eleventyConfig.addPlugin(cagovBuildSystem, {
-    postcss: {
-      file: 'src/css/postcss.config.js',
-      watch: ['src/css/**/*']
-    },
-    rollup: {
-      file: 'src/js/rollup.config.js',
-      watch: ['src/js/**/*']
-    },
-    beforeBuild: () => {
-      // Download files, check APIs, etc.
-    }
-  });
-
-  // ...the rest of your project's 11ty config code...
-};
-```
 
 ## Running the build
 
