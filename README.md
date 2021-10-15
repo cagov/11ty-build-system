@@ -14,7 +14,7 @@ First, install this plugin into your 11ty project.
 npm install @cagov/11ty-build-system
 ```
 
-Next, drop the plugin into your [`.eleventy.js` file](https://www.11ty.dev/docs/config/).
+Next, drop the plugin into your [`.eleventy.js`](https://www.11ty.dev/docs/config/) file.
 
 ```js
 const cagovBuildSystem = require('@cagov/11ty-build-system');
