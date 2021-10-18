@@ -1,7 +1,7 @@
-const minimatch = require("minimatch");
-const normalize = require('./normalize');
-const { generatePostCss } = require("./postcss");
-const { generateRollup } = require("./rollup");
+const minimatch = require('minimatch');
+const normalize = require('./normalize.js');
+const { generatePostCss } = require('./postcss.js');
+const { generateRollup } = require('./rollup.js');
 
 /**
  * An array of build tools processed by this 11ty plugin.
@@ -13,16 +13,11 @@ const buildTypes = ['rollup', 'postcss'];
  * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
  * @returns {string[]} An array of unique glob expressions.
  */
-const getAllGlobs = (options) =>
-    buildTypes.flatMap(buildType => {
-        let configSet = normalize.configSet(options[buildType]);
+const getAllGlobs = options => buildTypes.flatMap((buildType) => {
+  const configSet = normalize.configSet(options[buildType]);
 
-        return configSet.flatMap(buildConfig => 
-            buildConfig.watch
-        )
-    }).filter((value, index, collection) => 
-        collection.indexOf(value) === index
-    );
+  return configSet.flatMap(buildConfig => buildConfig.watch);
+}).filter((value, index, collection) => collection.indexOf(value) === index);
 
 /**
  * This callback executes PostCSS or Rollup processing.
@@ -35,25 +30,18 @@ const getAllGlobs = (options) =>
  * For use with 11ty's serve mode.
  * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
  * @param {string[]} changedFiles A list of changed files as supplied by 11ty's beforeWatch event.
- * @param {beforeWatchCallback} callback 
+ * @param {beforeWatchCallback} callback
  */
 const processChangedFilesFor = (options, changedFiles, callback) => {
-    let configSet = normalize.configSet(options);
+  const configSet = normalize.configSet(options);
 
-    let configsWithChanges = configSet.filter(config => 
-        changedFiles.some(file => 
-            config.watch.some(watch => 
-                minimatch(file.replace(/^\.\//, ''), watch)
-            )
-        )
-    );
+  const configsWithChanges = configSet.filter(config => changedFiles.some(file => config.watch.some(watch => minimatch(file.replace(/^\.\//, ''), watch))));
 
-    if (configsWithChanges.length) {
-        return callback(configsWithChanges);
-    } else {
-        return null;
-    }
-}
+  if (configsWithChanges.length) {
+    return callback(configsWithChanges);
+  }
+  return null;
+};
 
 /**
  * Execute build actions based on changes to watched files.
@@ -61,28 +49,28 @@ const processChangedFilesFor = (options, changedFiles, callback) => {
  * @param {string[]} changedFiles A list of changed files as supplied by 11ty's beforeWatch event.
  */
 const processChanges = (options, changedFiles) => {
-    let configSetsToProcess = [];
+  const configSetsToProcess = [];
 
-    if (options.hasOwnProperty('postcss')) {
-        let postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
-        if (postcssChanges) {
-            configSetsToProcess.push(postcssChanges);
-        }
+  if ('postcss' in options) {
+    const postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
+    if (postcssChanges) {
+      configSetsToProcess.push(postcssChanges);
     }
+  }
 
-    if (options.hasOwnProperty('rollup')) {
-        let rollupChanges = processChangedFilesFor(options.rollup, changedFiles, generateRollup);
-        if (rollupChanges) {
-            configSetsToProcess.push(rollupChanges);
-        }
+  if ('rollup' in options) {
+    const rollupChanges = processChangedFilesFor(options.rollup, changedFiles, generateRollup);
+    if (rollupChanges) {
+      configSetsToProcess.push(rollupChanges);
     }
+  }
 
-    return Promise.all(configSetsToProcess);
-}
+  return Promise.all(configSetsToProcess);
+};
 
 module.exports = {
-    buildTypes,
-    getAllGlobs,
-    processChangedFilesFor,
-    processChanges
-}
+  buildTypes,
+  getAllGlobs,
+  processChangedFilesFor,
+  processChanges,
+};

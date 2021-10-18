@@ -5,7 +5,8 @@
   "description": "An 11ty plugin to implement @cagov's standard build system for 11ty sites.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint:eslint": "eslint --ext .js . --ignore-path .gitignore",
+    "lint:eslint:fix": "eslint --ext .js . --ignore-path .gitignore --fix"
   },
   "author": {
     "name": "Jon Jensen",
@@ -25,5 +26,15 @@
   },
   "peerDependencies": {
     "@11ty/eleventy": "^1.0.0-canary.44"
+  },
+  "devDependencies": {
+    "@open-wc/eslint-config": "^4.3.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@open-wc/eslint-config"
+    ]
   }
 }

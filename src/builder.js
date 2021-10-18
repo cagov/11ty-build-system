@@ -1,24 +1,24 @@
-const { generatePostCss } = require("./postcss");
-const { generateRollup } = require("./rollup");
+const { generatePostCss } = require('./postcss.js');
+const { generateRollup } = require('./rollup.js');
 
 /**
  * Execute all available build actions: postcss, rollup, etc.
  * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
  */
 const processAll = (options) => {
-    let configsToBuild = [];
+  const configsToBuild = [];
 
-    if (options.hasOwnProperty('postcss')) {
-        configsToBuild.push(generatePostCss(options.postcss));
-    }
+  if ('postcss' in options) {
+    configsToBuild.push(generatePostCss(options.postcss));
+  }
 
-    if (options.hasOwnProperty('rollup')) {
-        configsToBuild.push(generateRollup(options.rollup));
-    }
+  if ('rollup' in options) {
+    configsToBuild.push(generateRollup(options.rollup));
+  }
 
-    return Promise.all(configsToBuild);
-}
+  return Promise.all(configsToBuild);
+};
 
 module.exports = {
-    processAll
-}
+  processAll,
+};
