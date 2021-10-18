@@ -1,5 +1,7 @@
 const minimatch = require("minimatch");
 const normalize = require('./normalize');
+const { generatePostCss } = require("./postcss");
+const { generateRollup } = require("./rollup");
 
 /**
  * An array of build tools processed by this 11ty plugin.
@@ -47,12 +49,40 @@ const processChangedFilesFor = (options, changedFiles, callback) => {
     );
 
     if (configsWithChanges.length) {
-        callback(configsWithChanges);
+        return callback(configsWithChanges);
+    } else {
+        return null;
     }
+}
+
+/**
+ * Execute build actions based on changes to watched files.
+ * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
+ * @param {string[]} changedFiles A list of changed files as supplied by 11ty's beforeWatch event.
+ */
+const processChanges = (options, changedFiles) => {
+    let configSetsToProcess = [];
+
+    if (options.hasOwnProperty('postcss')) {
+        let postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
+        if (postcssChanges) {
+            configSetsToProcess.push(postcssChanges);
+        }
+    }
+
+    if (options.hasOwnProperty('rollup')) {
+        let rollupChanges = processChangedFilesFor(options.rollup, changedFiles, generateRollup);
+        if (rollupChanges) {
+            configSetsToProcess.push(rollupChanges);
+        }
+    }
+
+    return Promise.all(configSetsToProcess);
 }
 
 module.exports = {
     buildTypes,
     getAllGlobs,
-    processChangedFilesFor
+    processChangedFilesFor,
+    processChanges
 }

@@ -1,7 +1,8 @@
 const shortcodes = require("./src/shortcodes");
 const { generatePostCss } = require("./src/postcss");
 const { generateRollup } = require("./src/rollup");
-const watch = require("./src/watch");
+const watcher = require("./src/watcher");
+const builder = require("./src/builder");
 const log = require("./src/log");
 
 let firstBuild = true;
@@ -31,7 +32,7 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
     eleventyConfig.addPairedShortcode("includejs", shortcodes.includeJSUnlessDev);
 
     // Add all watch configs into 11ty.
-    watch.getAllGlobs(options).forEach(watch => eleventyConfig.addWatchTarget(watch));
+    watcher.getAllGlobs(options).forEach(watch => eleventyConfig.addWatchTarget(watch));
 
     // Build assets per provided configs.
     eleventyConfig.on('beforeBuild', async () => {
@@ -43,27 +44,15 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
             options.beforeBuild();
         }
 
-        if (dev || firstBuild) {
-            let configsToBuild = [];
-
-            if (options.hasOwnProperty('postcss')) {
-                configsToBuild.push(generatePostCss(options.postcss));
-            }
-
-            if (options.hasOwnProperty('rollup')) {
-                configsToBuild.push(generateRollup(options.rollup));
-            }
-
-            await Promise.all(configsToBuild);
-
+        if (!dev || firstBuild) {
+            await builder.processAll(options);
             firstBuild = false;
         }
     });
     
     // Set up watch processes per config.
     eleventyConfig.on('beforeWatch', async changedFiles => {
-        watch.processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
-        watch.processChangedFilesFor(options.rollup, changedFiles, generateRollup);
+        await watcher.processChanges(options, changedFiles);
     });   
 }
 
