@@ -1,6 +1,6 @@
 {
   "name": "@cagov/11ty-build-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "An 11ty plugin to implement @cagov's standard build system for 11ty sites.",
   "main": "index.js",
@@ -25,7 +25,7 @@
     "rollup": "^2.58.0"
   },
   "peerDependencies": {
-    "@11ty/eleventy": "^1.0.0-canary.44"
+    "@11ty/eleventy": "^0.12.1"
   },
   "devDependencies": {
     "@open-wc/eslint-config": "^4.3.0",
