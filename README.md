@@ -213,13 +213,14 @@ eleventyConfig.addPlugin(cagovBuildSystem, {
 
 Like PostCSS and Rollup, you may opt to include multiple Sass configurations via array.
 
-Sass configuration options follo.
+Sass configuration options follow.
 
 |Name|Description|
 |:--:|:----------|
 |**`output`**|Destination file path for Sass output.|
 |**`watch`**|An array of [glob expressions](https://github.com/isaacs/minimatch) to watch for changes within 11ty's [serve](https://www.11ty.dev/docs/watch-serve/) mode.|
 |**`options`**|Processing options to pass to Dart Sass. See the [Sass JS API documentation](https://sass-lang.com/documentation/js-api/interfaces/LegacyFileOptions) for a full list of options.|
+|**`options.file`**|Path to the source Sass file. See [Sass JS API documentation](https://sass-lang.com/documentation/js-api/interfaces/LegacyFileOptions#file) for more info.|
 |**`postcss`**|A PostCSS configuration for post-processing the Sass output.|
 
 ## Run your own code
