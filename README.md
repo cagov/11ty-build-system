@@ -28,7 +28,7 @@ module.exports = function(eleventyConfig) {
 };
 ```
 
-TL;DR: here's a full example of the plugin's options.
+TL;DR: here's an example of the plugin's options.
 
 ```js
 const cagovBuildSystem = require('@cagov/11ty-build-system');
@@ -99,13 +99,25 @@ Each PostCSS configuration supplied to the plugin accepts the following options.
 Here's an example `postcss.config.js` file for use alongside the above PostCSS configuration.
 
 ```js
-const postcssSass = require('@csstools/postcss-sass');
+const purgecss = require('@fullhuman/postcss-purgecss');
+const cssnano = require('cssnano');
+const { purgeCssDefaults } = require('@cagov/11ty-build-system/src/postcss.js');
 
 module.exports = {
-  to: 'docs/css/build/styles.css',
-  from: 'src/css/_index.scss',
+  to: 'pages/_buildoutput/built.css',
+  from: 'docs/css/build/development.css',
   plugins: [
-    postcssSass({ includePaths: [ '.src/css' ] })
+    purgecss({
+      content: [
+          'pages/**/*.njk',
+          'pages/**/*.html',
+          'pages/**/*.js',
+          'pages/wordpress-posts/banner*.html',
+          'pages/@(translated|wordpress)-posts/new*.html'
+      ],
+      ...purgeCssDefaults
+    }),
+    cssnano
   ]
 };
 ```
@@ -178,6 +190,37 @@ export default {
 ```
 
 Check the [Rollup documentation](https://rollupjs.org/guide/en/#configuration-files) for more details.
+
+## Sass Configuration
+
+For Sass processing, this plugin provides [Dart Sass](https://sass-lang.com/dart-sass).
+
+```js
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  sass: {
+    watch: ['src/css/**/*'],
+    output: 'docs/css/build/development.css',
+    options: {
+      file: 'src/css/index.scss',
+      includePaths: [ 'src/css' ]
+    },
+    postcss: {
+      file: 'src/css/postcss.built.config.js'
+    }
+  }
+});
+```
+
+Like PostCSS and Rollup, you may opt to include multiple Sass configurations via array.
+
+Sass configuration options follo.
+
+|Name|Description|
+|:--:|:----------|
+|**`output`**|Destination file path for Sass output.|
+|**`watch`**|An array of [glob expressions](https://github.com/isaacs/minimatch) to watch for changes within 11ty's [serve](https://www.11ty.dev/docs/watch-serve/) mode.|
+|**`options`**|Processing options to pass to Dart Sass. See the [Sass JS API documentation](https://sass-lang.com/documentation/js-api/interfaces/LegacyFileOptions) for a full list of options.|
+|**`postcss`**|A PostCSS configuration for post-processing the Sass output.|
 
 ## Run your own code
 

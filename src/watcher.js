@@ -2,22 +2,25 @@ const minimatch = require('minimatch');
 const normalize = require('./normalize.js');
 const { generatePostCss } = require('./postcss.js');
 const { generateRollup } = require('./rollup.js');
+const { generateSass } = require('./sass.js');
 
 /**
  * An array of build tools processed by this 11ty plugin.
  */
-const buildTypes = ['rollup', 'postcss'];
+const buildTypes = ['rollup', 'postcss', 'sass'];
 
 /**
  * Finds all glob expressions within the options provided to this 11ty plugin.
  * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
  * @returns {string[]} An array of unique glob expressions.
  */
-const getAllGlobs = options => buildTypes.flatMap((buildType) => {
-  const configSet = normalize.configSet(options[buildType]);
-
-  return configSet.flatMap(buildConfig => buildConfig.watch);
-}).filter((value, index, collection) => collection.indexOf(value) === index);
+const getAllGlobs = options => buildTypes
+  .filter(buildType => buildType in options)
+  .flatMap((buildType) => {
+    const configSet = normalize.configSet(options[buildType]);
+    return configSet.flatMap(buildConfig => buildConfig.watch);
+  })
+  .filter((value, index, collection) => collection.indexOf(value) === index);
 
 /**
  * This callback executes PostCSS or Rollup processing.
@@ -51,10 +54,10 @@ const processChangedFilesFor = (options, changedFiles, callback) => {
 const processChanges = (options, changedFiles) => {
   const configSetsToProcess = [];
 
-  if ('postcss' in options) {
-    const postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
-    if (postcssChanges) {
-      configSetsToProcess.push(postcssChanges);
+  if ('sass' in options) {
+    const sassChanges = processChangedFilesFor(options.sass, changedFiles, generateSass);
+    if (sassChanges) {
+      configSetsToProcess.push(sassChanges);
     }
   }
 
@@ -62,6 +65,13 @@ const processChanges = (options, changedFiles) => {
     const rollupChanges = processChangedFilesFor(options.rollup, changedFiles, generateRollup);
     if (rollupChanges) {
       configSetsToProcess.push(rollupChanges);
+    }
+  }
+
+  if ('postcss' in options) {
+    const postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
+    if (postcssChanges) {
+      configSetsToProcess.push(postcssChanges);
     }
   }
 

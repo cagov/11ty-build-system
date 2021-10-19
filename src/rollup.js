@@ -7,7 +7,7 @@ const log = require('./log.js');
 
 /**
  * @typedef RollupConfig
- * @property {string[]} watch A list of filepath globs to check for changes during watch modes.
+ * @property {string[]} [watch] A list of filepath globs to check for changes during watch modes.
  * @property {string} file A filepath reference to the rollup.config.js file.
  */
 
