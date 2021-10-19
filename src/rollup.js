@@ -12,7 +12,7 @@ const log = require('./log.js');
  */
 
 /**
- *
+ * Generate all rollups.
  * @param {RollupConfig|RollupConfig[]} rollupConfig
  * @returns {Promise}
  */
@@ -39,7 +39,7 @@ const generateRollup = (rollupConfig) => {
           bundles.push(rollupOutput);
         }
 
-        return await Promise.all(bundles);
+        return Promise.all(bundles);
       });
   }));
 };

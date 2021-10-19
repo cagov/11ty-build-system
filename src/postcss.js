@@ -14,7 +14,7 @@ const log = require('./log.js');
  */
 
 /**
- *
+ * Generate all PostCSS configurations.
  * @param {PostcssConfig|PostcssConfig[]} postcssConfig
  * @returns {Promise}
  */
@@ -42,6 +42,22 @@ const generatePostCss = (postcssConfig) => {
   }));
 };
 
+/**
+ * Default safelist and extractors for using PurgeCSS with PostCSS.
+ */
+const purgeCssDefaults = {
+  safelist: {
+    deep: [/lang$/, /dir$/],
+  },
+  extractors: [
+    {
+      extractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || [],
+      extensions: ['js'],
+    },
+  ],
+};
+
 module.exports = {
   generatePostCss,
+  purgeCssDefaults,
 };
