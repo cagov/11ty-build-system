@@ -4,7 +4,7 @@ const builder = require('./src/builder.js');
 const log = require('./src/log.js');
 
 let firstBuild = true;
-const dev = process.env.NODE_ENV === 'development';
+let watching = false;
 
 /**
  * @typedef BuildSystemOptions
@@ -34,7 +34,7 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
 
   // Build assets per provided configs.
   eleventyConfig.on('beforeBuild', async () => {
-    if (dev) {
+    if (process.env.NODE_ENV === 'development') {
       log('Note: Building site in dev mode.');
     }
 
@@ -42,7 +42,7 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
       options.beforeBuild();
     }
 
-    if (!dev || firstBuild) {
+    if (firstBuild || !watching) {
       await builder.processAll(options);
       firstBuild = false;
     }
@@ -50,6 +50,7 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
 
   // Set up watch processes per config.
   eleventyConfig.on('beforeWatch', async (changedFiles) => {
+    watching = true;
     await watcher.processChanges(options, changedFiles);
   });
 };
