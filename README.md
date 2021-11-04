@@ -6,6 +6,8 @@ No need to worry about setting up long, multi-step npm scripts. Say goodbye to t
 
 🚧 Work in progress! Use at your peril! 🚧
 
+> Note: this plugin only works correctly with newer 1.0.0-beta versions of 11ty.
+
 ## Installation 
 
 First, install this plugin into your 11ty project.
