@@ -2,6 +2,7 @@ const shortcodes = require('./src/shortcodes.js');
 const watcher = require('./src/watcher.js');
 const builder = require('./src/builder.js');
 const log = require('./src/log.js');
+const nunjucks = require('./src/nunjucks.js');
 
 let firstBuild = true;
 let watching = false;
@@ -25,6 +26,8 @@ let watching = false;
  * @param {BuildSystemOptions} options Build options.
  */
 const eleventyBuildSystem = (eleventyConfig, options = {}) => {
+  eleventyConfig.setLibrary('njk', nunjucks.environment);
+
   // Add in all shortcodes.
   eleventyConfig.addPairedShortcode('includecss', shortcodes.includeCSSUnlessDev);
   eleventyConfig.addPairedShortcode('includejs', shortcodes.includeJSUnlessDev);
@@ -32,8 +35,15 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
   // Add all watch configs into 11ty.
   watcher.getAllGlobs(options).forEach(watch => eleventyConfig.addWatchTarget(watch));
 
+  nunjucks.forEachMissingLayout((layout) => {
+    eleventyConfig.addLayoutAlias(layout.file, layout.path);
+    eleventyConfig.addLayoutAlias(layout.slug, layout.path);
+  });
+
   // Build assets per provided configs.
   eleventyConfig.on('beforeBuild', async () => {
+    nunjucks.addMissingTemplateFolders();
+
     if (process.env.NODE_ENV === 'development') {
       log('Note: Building site in dev mode.');
     }
@@ -46,6 +56,10 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
       await builder.processAll(options);
       firstBuild = false;
     }
+  });
+
+  eleventyConfig.on('afterBuild', async () => {
+    nunjucks.removeEmptyTemplateFolders();
   });
 
   // Set up watch processes per config.
