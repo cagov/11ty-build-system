@@ -38,7 +38,7 @@ const getAllGlobs = options => buildTypes
 const processChangedFilesFor = (options, changedFiles, callback) => {
   const configSet = normalize.configSet(options);
 
-  const configsWithChanges = configSet.filter(config => changedFiles.some(file => config.watch.some(watch => minimatch(file.replace(/^\.\//, ''), watch))));
+  const configsWithChanges = configSet.filter(config => changedFiles.some(file => config?.watch?.some(watch => minimatch(file.replace(/^\.\//, ''), watch))));
 
   if (configsWithChanges.length) {
     return callback(configsWithChanges);

@@ -24,9 +24,9 @@ const forEachMissingLayout = (fn) => {
   const defaultLayouts = glob.sync(`${defaultLayoutPath}/**/*`, { nodir: true })
     .map(f => f.replace(`${defaultLayoutPath}/`, ''));
 
-  const neededLayouts = defaultLayouts.filter(file => !projectLayouts.includes(file));
+  const missingLayouts = defaultLayouts.filter(file => !projectLayouts.includes(file));
 
-  neededLayouts.forEach((file) => {
+  missingLayouts.forEach((file) => {
     const layoutInfo = {
       file,
       path: `../../../../${defaultLayoutPath}/${file}`,
