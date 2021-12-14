@@ -40,25 +40,35 @@
   <!-- Google Analytics performance -->
   <link rel="preconnect" href="https://www.google-analytics.com/">
   <!-- CSS -->
-  {% set css %}
-  {% include "../../../../../../dist/index.css" %}
-  {% endset %}
-  <!-- the inlined hardcoded grid css below is there because it was breaking sass compilation -->
-  <style>
-    {{ css | cssmin | safe }}
-    .cagov-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
-    }
-  </style>
+  {% block css %}
+    {% set css %}
+      {% include "../../../../../../dist/index.css" %}
+    {% endset %}
+    <!-- the inlined hardcoded grid css below is there because it was breaking sass compilation -->
+    <style>
+      {{ css | cssmin | safe }}
+      .cagov-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+      }
+    </style>
+  {% endblock %}
 </head>
 
 <body>
   <div id="skip-to-content"><a href="#main-content">Skip to Main Content</a></div>
 
   <div class="header-container">
-    {% include "utility-header.njk" %}
-    {% include "branding.njk" %}
-    {% include "nav-component.njk" %}
+    {% block statewideHeader %}
+      {% include "statewide-header.njk" %}
+    {% endblock %}
+
+    {% block branding %}
+      {% include "branding.njk" %}
+    {% endblock %}
+
+    {% block menu %}
+      {% include "menu.njk" %}
+    {% endblock %}
   </div>
 
   {% block content %}
@@ -66,16 +76,22 @@
   {% endblock %}
 
   <div class="footer-container">
-    {% include "footer.njk" %}
-    {% include "footer-universal.njk" %}
+    {% block agencyFooter %}
+      {% include "agency-footer.njk" %}
+    {% endblock %}
+    {% block statewideFooter %}
+      {% include "statewide-footer.njk" %}
+    {% endblock %}
   </div>
 
-  {% set js %}
-  {% include "../../../../../../dist/built.js" %}
-  {% endset %}
-  <script type="module">
-    {{ js | safe }}
-  </script>
+  {% block js %}
+    {% set js %}
+      {% include "../../../../../../dist/built.js" %}
+    {% endset %}
+    <script type="module">
+      {{ js | safe }}
+    </script>
+  {% endblock %}
 </body>
 
 </html>
