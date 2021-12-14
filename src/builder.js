@@ -1,6 +1,7 @@
 const { generatePostCss } = require('./postcss.js');
 const { generateRollup } = require('./rollup.js');
 const { generateSass } = require('./sass.js');
+const { generateEsbuild } = require('./esbuild.js');
 
 /**
  * Execute all available build actions: postcss, rollup, etc.
@@ -19,6 +20,10 @@ const processAll = (options) => {
 
   if ('sass' in options) {
     configsToBuild.push(generateSass(options.sass));
+  }
+
+  if ('esbuild' in options) {
+    configsToBuild.push(generateEsbuild(options.esbuild));
   }
 
   return Promise.all(configsToBuild);
