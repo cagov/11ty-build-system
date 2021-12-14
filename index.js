@@ -40,6 +40,10 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
     eleventyConfig.addLayoutAlias(layout.slug, layout.path);
   });
 
+  eleventyConfig.addPassthroughCopy({
+    'node_modules/@cagov/11ty-build-system/defaults/css/fonts': 'fonts',
+  });
+
   // Build assets per provided configs.
   eleventyConfig.on('beforeBuild', async () => {
     nunjucks.addMissingTemplateFolders();
