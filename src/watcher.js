@@ -15,13 +15,21 @@ const buildTypes = ['rollup', 'postcss', 'sass', 'esbuild'];
  * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
  * @returns {string[]} An array of unique glob expressions.
  */
-const getAllGlobs = options => buildTypes
-  .filter(buildType => buildType in options)
-  .flatMap((buildType) => {
-    const configSet = normalize.configSet(options[buildType]);
-    return configSet.flatMap(buildConfig => buildConfig.watch);
-  })
-  .filter((value, index, collection) => collection.indexOf(value) === index);
+const getAllGlobs = (options) => {
+  const globs = buildTypes
+    .filter(buildType => buildType in options)
+    .flatMap((buildType) => {
+      const configSet = normalize.configSet(options[buildType]);
+      return configSet.flatMap(buildConfig => buildConfig.watch);
+    })
+    .filter((value, index, collection) => collection.indexOf(value) === index);
+
+  if ('extraContent' in options) {
+    Object.keys(options.extraContent).forEach(key => globs.push(key));
+  }
+
+  return globs;
+};
 
 /**
  * This callback executes PostCSS or Rollup processing.
