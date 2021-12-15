@@ -1,8 +1,11 @@
 const shortcodes = require('./src/shortcodes.js');
+const filters = require('./src/filters.js');
 const watcher = require('./src/watcher.js');
 const builder = require('./src/builder.js');
 const log = require('./src/log.js');
 const nunjucks = require('./src/nunjucks.js');
+const content = require('./src/content.js');
+const transforms = require('./src/transforms.js');
 
 let firstBuild = true;
 let watching = false;
@@ -26,11 +29,22 @@ let watching = false;
  * @param {BuildSystemOptions} options Build options.
  */
 const eleventyBuildSystem = (eleventyConfig, options = {}) => {
+  eleventyConfig.setBrowserSyncConfig({
+    watch: true,
+    notify: true,
+  });
+
   eleventyConfig.setLibrary('njk', nunjucks.environment);
 
-  // Add in all shortcodes.
-  eleventyConfig.addPairedShortcode('includecss', shortcodes.includeCSSUnlessDev);
-  eleventyConfig.addPairedShortcode('includejs', shortcodes.includeJSUnlessDev);
+  // Add shortcodes.
+  eleventyConfig.addPairedShortcode('includecss', shortcodes.includeCSS);
+  eleventyConfig.addPairedShortcode('includejs', shortcodes.includeJS);
+
+  // Add filters.
+  eleventyConfig.addFilter('changeDomain', filters.changeDomain);
+
+  // Add transforms.
+  eleventyConfig.addTransform('htmlMinifier', transforms.minifyHTML);
 
   // Add all watch configs into 11ty.
   watcher.getAllGlobs(options).forEach(watch => eleventyConfig.addWatchTarget(watch));
@@ -46,11 +60,12 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
 
   // Build assets per provided configs.
   eleventyConfig.on('beforeBuild', async () => {
-    nunjucks.addMissingTemplateFolders();
-
     if (process.env.NODE_ENV === 'development') {
       log('Note: Building site in dev mode.');
     }
+
+    nunjucks.addMissingTemplateFolders();
+    content.link(options.extraContent);
 
     if (typeof options.beforeBuild === 'function') {
       options.beforeBuild();
@@ -64,6 +79,7 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
 
   eleventyConfig.on('afterBuild', async () => {
     nunjucks.removeEmptyTemplateFolders();
+    content.unlink(options.extraContent);
   });
 
   // Set up watch processes per config.
