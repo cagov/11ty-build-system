@@ -3,11 +3,12 @@ const normalize = require('./normalize.js');
 const { generatePostCss } = require('./postcss.js');
 const { generateRollup } = require('./rollup.js');
 const { generateSass } = require('./sass.js');
+const { generateEsbuild } = require('./esbuild.js');
 
 /**
  * An array of build tools processed by this 11ty plugin.
  */
-const buildTypes = ['rollup', 'postcss', 'sass'];
+const buildTypes = ['rollup', 'postcss', 'sass', 'esbuild'];
 
 /**
  * Finds all glob expressions within the options provided to this 11ty plugin.
@@ -72,6 +73,13 @@ const processChanges = (options, changedFiles) => {
     const postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
     if (postcssChanges) {
       configSetsToProcess.push(postcssChanges);
+    }
+  }
+
+  if ('esbuild' in options) {
+    const esbuildChanges = processChangedFilesFor(options.esbuild, changedFiles, generateEsbuild);
+    if (esbuildChanges) {
+      configSetsToProcess.push(esbuildChanges);
     }
   }
 
