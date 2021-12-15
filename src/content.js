@@ -29,7 +29,7 @@ const unlink = (symlinkConfig) => {
       const filename = path.basename(file);
       const destination = `${targetDir}/${filename}`;
       fs.unlinkSync(destination);
-      log(`Unlinking ${destination} ${chalk.cyan('(symlink)')}`);
+      log(`Unlinking ${destination} ${chalk.cyan('(content)')}`);
     });
 
     if (fs.readdirSync(targetDir).length === 0) {
