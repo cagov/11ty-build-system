@@ -1,6 +1,6 @@
 /* GLOBAL */
 // Site Colors
-@import "./colorschemes/_drought"; /* theme colors */
+@import "../../../node_modules/@cagov/11ty-build-system/defaults/css/colorschemes/_drought"; /* theme colors */
 
 /* sitewide styles */
 @import "../../../node_modules/@cagov/ds-base-css/src/_core.scss";
