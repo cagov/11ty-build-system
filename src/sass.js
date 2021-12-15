@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const { promisify } = require('util');
 const sass = require('sass');
+const CleanCSS = require('clean-css');
 
 const sassRender = promisify(sass.render);
 const chalk = require('chalk');
@@ -31,7 +32,16 @@ const generateSass = (sassConfig) => {
       const filesToWrite = [];
 
       log(`Writing ${config.output} from ${config.options.file} ${chalk.magenta('(sass)')}`);
-      filesToWrite.push(fs.writeFile(config.output, result.css));
+
+      let outputCSS;
+
+      if (config.minify) {
+        outputCSS = new CleanCSS({}).minify(result.css).styles;
+      } else {
+        outputCSS = result.css;
+      }
+
+      filesToWrite.push(fs.writeFile(config.output, outputCSS));
 
       if (config.options.sourceMap) {
         const sourceMapOutputPath = config.output.replace(/\.css/gi, '.map.css');
