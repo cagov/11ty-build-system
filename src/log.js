@@ -7,7 +7,7 @@ const chalk = require('chalk');
  * @param {string} message The message to log.
  */
 const log = (message) => {
-  console.log(`${chalk.blue('[CaGov Build System]')} ${message}`);
+  console.log(`${chalk.blue('[CaGov]')} ${message}`);
 };
 
 module.exports = log;
