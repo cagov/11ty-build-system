@@ -6,9 +6,11 @@ const log = require('./log.js');
 const generateEsbuild = (esbuildConfig) => {
   const configSets = normalize.configSet(esbuildConfig);
 
-  return Promise.all(configSets.map(config => esbuild.build(config)
+  return Promise.all(configSets.map(config => esbuild.build(config.options)
     .then(() => {
-      log(`Writing ${config.outfile} from ${config.entryPoints[0]} ${chalk.yellow('(esbuild)')}`);
+      config.options.entryPoints.forEach((entry) => {
+        log(`Writing ${config.options.outfile} from ${entry} ${chalk.yellow('(esbuild)')}`);
+      });
     })
     .catch(() => process.exit(1))));
 };
