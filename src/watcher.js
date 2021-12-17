@@ -3,24 +3,29 @@ const normalize = require('./normalize.js');
 const { generatePostCss } = require('./postcss.js');
 const { generateRollup } = require('./rollup.js');
 const { generateSass } = require('./sass.js');
+const { generateEsbuild } = require('./esbuild.js');
 
 /**
  * An array of build tools processed by this 11ty plugin.
  */
-const buildTypes = ['rollup', 'postcss', 'sass'];
+const buildTypes = ['rollup', 'postcss', 'sass', 'esbuild'];
 
 /**
  * Finds all glob expressions within the options provided to this 11ty plugin.
  * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
  * @returns {string[]} An array of unique glob expressions.
  */
-const getAllGlobs = options => buildTypes
-  .filter(buildType => buildType in options)
-  .flatMap((buildType) => {
-    const configSet = normalize.configSet(options[buildType]);
-    return configSet.flatMap(buildConfig => buildConfig.watch);
-  })
-  .filter((value, index, collection) => collection.indexOf(value) === index);
+const getAllGlobs = (options) => {
+  const globs = buildTypes
+    .filter(buildType => buildType in options)
+    .flatMap((buildType) => {
+      const configSet = normalize.configSet(options[buildType]);
+      return configSet.flatMap(buildConfig => buildConfig.watch);
+    })
+    .filter((value, index, collection) => collection.indexOf(value) === index);
+
+  return globs;
+};
 
 /**
  * This callback executes PostCSS or Rollup processing.
@@ -38,7 +43,7 @@ const getAllGlobs = options => buildTypes
 const processChangedFilesFor = (options, changedFiles, callback) => {
   const configSet = normalize.configSet(options);
 
-  const configsWithChanges = configSet.filter(config => changedFiles.some(file => config.watch.some(watch => minimatch(file.replace(/^\.\//, ''), watch))));
+  const configsWithChanges = configSet.filter(config => changedFiles.some(file => config?.watch?.some(watch => minimatch(file.replace(/^\.\//, ''), watch))));
 
   if (configsWithChanges.length) {
     return callback(configsWithChanges);
@@ -72,6 +77,13 @@ const processChanges = (options, changedFiles) => {
     const postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
     if (postcssChanges) {
       configSetsToProcess.push(postcssChanges);
+    }
+  }
+
+  if ('esbuild' in options) {
+    const esbuildChanges = processChangedFilesFor(options.esbuild, changedFiles, generateEsbuild);
+    if (esbuildChanges) {
+      configSetsToProcess.push(esbuildChanges);
     }
   }
 

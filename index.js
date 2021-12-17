@@ -1,7 +1,12 @@
+const chokidar = require('chokidar');
 const shortcodes = require('./src/shortcodes.js');
+const filters = require('./src/filters.js');
 const watcher = require('./src/watcher.js');
 const builder = require('./src/builder.js');
 const log = require('./src/log.js');
+const nunjucks = require('./src/nunjucks.js');
+const transforms = require('./src/transforms.js');
+const content = require('./src/content.js');
 
 let firstBuild = true;
 let watching = false;
@@ -25,12 +30,36 @@ let watching = false;
  * @param {BuildSystemOptions} options Build options.
  */
 const eleventyBuildSystem = (eleventyConfig, options = {}) => {
-  // Add in all shortcodes.
-  eleventyConfig.addPairedShortcode('includecss', shortcodes.includeCSSUnlessDev);
-  eleventyConfig.addPairedShortcode('includejs', shortcodes.includeJSUnlessDev);
+  eleventyConfig.setUseGitIgnore(false);
+  eleventyConfig.setWatchThrottleWaitTime(100);
+
+  eleventyConfig.setBrowserSyncConfig({
+    notify: true,
+  });
+
+  eleventyConfig.setLibrary('njk', nunjucks.environment);
+
+  // Add shortcodes.
+  eleventyConfig.addPairedShortcode('includecss', shortcodes.includeCSS);
+  eleventyConfig.addPairedShortcode('includejs', shortcodes.includeJS);
+
+  // Add filters.
+  eleventyConfig.addFilter('changeDomain', filters.changeDomain);
+
+  // Add transforms.
+  eleventyConfig.addTransform('htmlMinifier', transforms.minifyHTML);
 
   // Add all watch configs into 11ty.
   watcher.getAllGlobs(options).forEach(watch => eleventyConfig.addWatchTarget(watch));
+
+  nunjucks.forEachMissingLayout((layout) => {
+    eleventyConfig.addLayoutAlias(layout.file, layout.path);
+    eleventyConfig.addLayoutAlias(layout.slug, layout.path);
+  });
+
+  eleventyConfig.addPassthroughCopy({
+    'node_modules/@cagov/11ty-build-system/defaults/css/fonts': 'fonts',
+  });
 
   // Build assets per provided configs.
   eleventyConfig.on('beforeBuild', async () => {
@@ -38,14 +67,33 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
       log('Note: Building site in dev mode.');
     }
 
+    nunjucks.addMissingTemplateFolders();
+
     if (typeof options.beforeBuild === 'function') {
       options.beforeBuild();
     }
 
     if (firstBuild || !watching) {
       await builder.processAll(options);
+
+      if ('extraContent' in options) {
+        chokidar.watch(Object.keys(options.extraContent), {
+          awaitWriteFinish: {
+            stabilityThreshold: 100,
+            pollInterval: 100,
+          },
+        })
+          .on('add', path => content.copyOnWatch(path, options.extraContent))
+          .on('change', path => content.copyOnWatch(path, options.extraContent))
+          .on('unlink', path => content.deleteOnWatch(path, options.extraContent));
+      }
+
       firstBuild = false;
     }
+  });
+
+  eleventyConfig.on('afterBuild', async () => {
+    nunjucks.removeEmptyTemplateFolders();
   });
 
   // Set up watch processes per config.
