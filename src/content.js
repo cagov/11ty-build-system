@@ -1,44 +1,57 @@
+const minimatch = require('minimatch');
 const glob = require('glob');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const chalk = require('chalk');
 const log = require('./log.js');
 
-const link = (symlinkConfig) => {
-  for (const [sourceGlob, targetDir] of Object.entries(symlinkConfig)) {
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir);
-    }
-
-    const sourceFiles = glob.sync(sourceGlob, { nodir: true });
-
-    sourceFiles.forEach((file) => {
-      const filename = path.basename(file);
-      const destination = `${targetDir}/${filename}`;
-      fs.copyFileSync(file, destination);
-      log(`Linking ${destination} from ${file} ${chalk.cyan('(content)')}`);
-    });
-  }
+const copyOne = (sourceFile, targetDir) => {
+  const filename = path.basename(sourceFile);
+  const destination = `${targetDir}/${filename}`;
+  return fs.copyFile(sourceFile, destination).then(() => {
+    log(`Linking ${destination} from ${sourceFile} ${chalk.cyan('(content)')}`);
+  });
 };
 
-const unlink = (symlinkConfig) => {
-  for (const [sourceGlob, targetDir] of Object.entries(symlinkConfig)) {
-    const sourceFiles = glob.sync(sourceGlob, { nodir: true });
+const deleteOne = (sourceFile, targetDir) => {
+  const filename = path.basename(sourceFile);
+  const destination = `${targetDir}/${filename}`;
+  return fs.unlink(destination).then(() => {
+    log(`Unlinking ${destination} from ${sourceFile} ${chalk.cyan('(content)')}`);
+  });
+};
 
-    sourceFiles.forEach((file) => {
-      const filename = path.basename(file);
-      const destination = `${targetDir}/${filename}`;
-      fs.unlinkSync(destination);
-      log(`Unlinking ${destination} ${chalk.cyan('(content)')}`);
+const copyAll = (contentConfig) => {
+  const filesToCopy = Object.entries(contentConfig).map(([sourceGlob, targetDir]) => {
+    fs.mkdir(targetDir).catch((err) => {
+      if (!err.code === 'EEXIST') {
+        console.log(err);
+      }
     });
 
-    if (fs.readdirSync(targetDir).length === 0) {
-      fs.rmdirSync(targetDir);
-    }
-  }
+    const sourceFiles = glob.sync(sourceGlob, { nodir: true });
+
+    return Promise.all(sourceFiles.map(file => copyOne(file, targetDir)));
+  });
+
+  return Promise.all(filesToCopy);
+};
+
+const copyOnWatch = (filePath, contentConfig) => {
+  const targets = Object.keys(contentConfig).filter(key => minimatch(filePath, key));
+
+  return Promise.all(targets.map(target => copyOne(filePath, contentConfig[target])));
+};
+
+const deleteOnWatch = (filePath, contentConfig) => {
+  const targets = Object.keys(contentConfig).filter(key => minimatch(filePath, key));
+
+  return Promise.all(targets.map(target => deleteOne(filePath, contentConfig[target])));
 };
 
 module.exports = {
-  link,
-  unlink,
+  copyOne,
+  copyAll,
+  copyOnWatch,
+  deleteOnWatch,
 };

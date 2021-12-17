@@ -1,11 +1,12 @@
+const chokidar = require('chokidar');
 const shortcodes = require('./src/shortcodes.js');
 const filters = require('./src/filters.js');
 const watcher = require('./src/watcher.js');
 const builder = require('./src/builder.js');
 const log = require('./src/log.js');
 const nunjucks = require('./src/nunjucks.js');
-const content = require('./src/content.js');
 const transforms = require('./src/transforms.js');
+const content = require('./src/content.js');
 
 let firstBuild = true;
 let watching = false;
@@ -29,8 +30,10 @@ let watching = false;
  * @param {BuildSystemOptions} options Build options.
  */
 const eleventyBuildSystem = (eleventyConfig, options = {}) => {
+  eleventyConfig.setUseGitIgnore(false);
+  eleventyConfig.setWatchThrottleWaitTime(100);
+
   eleventyConfig.setBrowserSyncConfig({
-    watch: true,
     notify: true,
   });
 
@@ -65,7 +68,6 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
     }
 
     nunjucks.addMissingTemplateFolders();
-    content.link(options.extraContent);
 
     if (typeof options.beforeBuild === 'function') {
       options.beforeBuild();
@@ -73,13 +75,25 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
 
     if (firstBuild || !watching) {
       await builder.processAll(options);
+
+      if ('extraContent' in options) {
+        chokidar.watch(Object.keys(options.extraContent), {
+          awaitWriteFinish: {
+            stabilityThreshold: 100,
+            pollInterval: 100,
+          },
+        })
+          .on('add', path => content.copyOnWatch(path, options.extraContent))
+          .on('change', path => content.copyOnWatch(path, options.extraContent))
+          .on('unlink', path => content.deleteOnWatch(path, options.extraContent));
+      }
+
       firstBuild = false;
     }
   });
 
   eleventyConfig.on('afterBuild', async () => {
     nunjucks.removeEmptyTemplateFolders();
-    content.unlink(options.extraContent);
   });
 
   // Set up watch processes per config.

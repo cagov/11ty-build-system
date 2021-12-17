@@ -52,7 +52,7 @@ const removeEmptyTemplateFolders = () => {
     fs.rmdirSync(projectLayoutPath);
     fs.rmdirSync(projectIncludesPath);
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 };
 

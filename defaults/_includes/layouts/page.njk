@@ -6,7 +6,9 @@
             <div class="ds-content-layout">
                 <div class="sidebar-container everylayout" style="z-index: 1;">
                     <sidebar space="0" side="left">
-                        <cagov-content-navigation data-selector="main" data-type="wordpress" data-label="On this page"></cagov-content-navigation>
+                        {% block contentNavigation %}
+                            {% include "content-navigation.njk" %}                        
+                        {% endblock %}
                     </sidebar>
                 </div>
                 <div class="everylayout">

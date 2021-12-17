@@ -2,6 +2,7 @@ const { generatePostCss } = require('./postcss.js');
 const { generateRollup } = require('./rollup.js');
 const { generateSass } = require('./sass.js');
 const { generateEsbuild } = require('./esbuild.js');
+const { copyAll } = require('./content.js');
 
 /**
  * Execute all available build actions: postcss, rollup, etc.
@@ -24,6 +25,10 @@ const processAll = (options) => {
 
   if ('esbuild' in options) {
     configsToBuild.push(generateEsbuild(options.esbuild));
+  }
+
+  if ('extraContent' in options) {
+    configsToBuild.push(copyAll(options.extraContent));
   }
 
   return Promise.all(configsToBuild);

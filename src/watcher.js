@@ -24,10 +24,6 @@ const getAllGlobs = (options) => {
     })
     .filter((value, index, collection) => collection.indexOf(value) === index);
 
-  if ('extraContent' in options) {
-    Object.keys(options.extraContent).forEach(key => globs.push(key));
-  }
-
   return globs;
 };
 
