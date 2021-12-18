@@ -22,17 +22,19 @@ const deleteOne = (sourceFile, targetDir) => {
 };
 
 const copyAll = (contentConfig) => {
-  const filesToCopy = Object.entries(contentConfig).map(([sourceGlob, targetDir]) => {
-    fs.mkdir(targetDir).catch((err) => {
+  const filesToCopy = Object.entries(contentConfig).map(
+    ([sourceGlob, targetDir]) => fs.mkdir(
+      targetDir, { recursive: true },
+    ).catch((err) => {
       if (!err.code === 'EEXIST') {
         console.log(err);
       }
-    });
+    }).then(() => {
+      const sourceFiles = glob.sync(sourceGlob, { nodir: true });
 
-    const sourceFiles = glob.sync(sourceGlob, { nodir: true });
-
-    return Promise.all(sourceFiles.map(file => copyOne(file, targetDir)));
-  });
+      return Promise.all(sourceFiles.map(file => copyOne(file, targetDir)));
+    }),
+  );
 
   return Promise.all(filesToCopy);
 };

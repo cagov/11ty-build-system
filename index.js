@@ -37,8 +37,6 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
     notify: true,
   });
 
-  eleventyConfig.setLibrary('njk', nunjucks.environment);
-
   // Add shortcodes.
   eleventyConfig.addPairedShortcode('includecss', shortcodes.includeCSS);
   eleventyConfig.addPairedShortcode('includejs', shortcodes.includeJS);
@@ -52,10 +50,14 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
   // Add all watch configs into 11ty.
   watcher.getAllGlobs(options).forEach(watch => eleventyConfig.addWatchTarget(watch));
 
-  nunjucks.forEachMissingLayout((layout) => {
-    eleventyConfig.addLayoutAlias(layout.file, layout.path);
-    eleventyConfig.addLayoutAlias(layout.slug, layout.path);
-  });
+  if (options?.dir?.includes) {
+    eleventyConfig.setLibrary('njk', nunjucks.environment);
+
+    nunjucks.forEachMissingLayout((layout) => {
+      eleventyConfig.addLayoutAlias(layout.file, layout.path);
+      eleventyConfig.addLayoutAlias(layout.slug, layout.path);
+    });
+  }
 
   eleventyConfig.addPassthroughCopy({
     'node_modules/@cagov/11ty-build-system/defaults/css/fonts': 'fonts',
@@ -67,7 +69,9 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
       log('Note: Building site in dev mode.');
     }
 
-    nunjucks.addMissingTemplateFolders();
+    if (options?.dir?.includes) {
+      nunjucks.addMissingTemplateFolders();
+    }
 
     if (typeof options.beforeBuild === 'function') {
       options.beforeBuild();
@@ -93,7 +97,6 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
   });
 
   eleventyConfig.on('afterBuild', async () => {
-    nunjucks.removeEmptyTemplateFolders();
   });
 
   // Set up watch processes per config.
