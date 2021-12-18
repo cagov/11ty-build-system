@@ -79,19 +79,6 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
 
     if (firstBuild || !watching) {
       await builder.processAll(options);
-
-      if ('extraContent' in options) {
-        chokidar.watch(Object.keys(options.extraContent), {
-          awaitWriteFinish: {
-            stabilityThreshold: 100,
-            pollInterval: 100,
-          },
-        })
-          .on('add', path => content.copyOnWatch(path, options.extraContent))
-          .on('change', path => content.copyOnWatch(path, options.extraContent))
-          .on('unlink', path => content.deleteOnWatch(path, options.extraContent));
-      }
-
       firstBuild = false;
     }
   });
@@ -101,6 +88,18 @@ const eleventyBuildSystem = (eleventyConfig, options = {}) => {
 
   // Set up watch processes per config.
   eleventyConfig.on('beforeWatch', async (changedFiles) => {
+    if ('extraContent' in options && !watching) {
+      chokidar.watch(Object.keys(options.extraContent), {
+        awaitWriteFinish: {
+          stabilityThreshold: 100,
+          pollInterval: 100,
+        },
+      })
+        .on('add', path => content.copyOnWatch(path, options.extraContent))
+        .on('change', path => content.copyOnWatch(path, options.extraContent))
+        .on('unlink', path => content.deleteOnWatch(path, options.extraContent));
+    }
+
     watching = true;
     await watcher.processChanges(options, changedFiles);
   });
