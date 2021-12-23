@@ -1,25 +1,19 @@
 const minimatch = require('minimatch');
 const normalize = require('./normalize.js');
-const { generatePostCss } = require('./postcss.js');
-const { generateRollup } = require('./rollup.js');
-const { generateSass } = require('./sass.js');
-const { generateEsbuild } = require('./esbuild.js');
-
-/**
- * An array of build tools processed by this 11ty plugin.
- */
-const buildTypes = ['rollup', 'postcss', 'sass', 'esbuild'];
+const processors = require('./processors.js');
 
 /**
  * Finds all glob expressions within the options provided to this 11ty plugin.
- * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
- * @returns {string[]} An array of unique glob expressions.
+ * @param {import("../index").ProcessorsConfig} processorsConfig
+ * Options provided to this 11ty plugin.
+ * @returns {string[]}
+ * An array of unique glob expressions.
  */
-const getAllGlobs = (options) => {
-  const globs = buildTypes
-    .filter(buildType => buildType in options)
-    .flatMap((buildType) => {
-      const configSet = normalize.configSet(options[buildType]);
+const getAllGlobs = (processorsConfig = {}) => {
+  const globs = Object.keys(processors)
+    .filter(processorType => processorType in processorsConfig)
+    .flatMap((processorType) => {
+      const configSet = normalize.configSet(processorsConfig[processorType]);
       return configSet.flatMap(buildConfig => buildConfig.watch);
     })
     .filter((value, index, collection) => collection.indexOf(value) === index);
@@ -28,23 +22,30 @@ const getAllGlobs = (options) => {
 };
 
 /**
- * This callback executes PostCSS or Rollup processing.
- * @callback beforeWatchCallback
- * @param {import("./postcss").PostcssConfig|import("./rollup").RollupConfig} options
+ * This callback executes processing.
+ * @name beforeWatchCallback
+ * @template T
+ * @function
+ * @param {T} processorConfig
  */
 
 /**
  * Conditionally executes the callback only if a config's watched files have changed.
  * For use with 11ty's serve mode.
- * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
- * @param {string[]} changedFiles A list of changed files as supplied by 11ty's beforeWatch event.
+ * @template T
+ * @param {T} processorConfig
+ * Options provided to this 11ty plugin.
+ * @param {string[]} changedFiles
+ * A list of changed files as supplied by 11ty's beforeWatch event.
  * @param {beforeWatchCallback} callback
  */
-const processChangedFilesFor = (options, changedFiles, callback) => {
-  const configSet = normalize.configSet(options);
+const processChangedFilesFor = (processorConfig, changedFiles, callback) => {
+  const configSet = normalize.configSet(processorConfig);
 
+  // Find any processor configurations for which the files have changed.
   const configsWithChanges = configSet.filter(config => changedFiles.some(file => config?.watch?.some(watch => minimatch(file.replace(/^\.\//, ''), watch))));
 
+  // If there are changed files, execute the given processor.
   if (configsWithChanges.length) {
     return callback(configsWithChanges);
   }
@@ -53,45 +54,37 @@ const processChangedFilesFor = (options, changedFiles, callback) => {
 
 /**
  * Execute build actions based on changes to watched files.
- * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
- * @param {string[]} changedFiles A list of changed files as supplied by 11ty's beforeWatch event.
+ * @param {import("../index").ProcessorsConfig} processorsConfig
+ * Options provided to this 11ty plugin.
+ * @param {string[]} changedFiles
+ * A list of changed files as supplied by 11ty's beforeWatch event.
  */
-const processChanges = (options, changedFiles) => {
-  const configSetsToProcess = [];
+const processChanges = (processorsConfig, changedFiles) => {
+  // Iterate over the given processor configs supplied to the plugin (sass, esbuild, etc.).
+  const configSetsToProcess = Object.entries(processorsConfig)
+    .reduce((bucket, [processorType, configuration]) => {
+      if (processors[processorType]) {
+        // Check to see if any of this processor's watched files have changed.
+        // If so, execute the build action against the processor with changed files.
+        const changes = processChangedFilesFor(
+          configuration,
+          changedFiles,
+          processors[processorType],
+        );
 
-  if ('sass' in options) {
-    const sassChanges = processChangedFilesFor(options.sass, changedFiles, generateSass);
-    if (sassChanges) {
-      configSetsToProcess.push(sassChanges);
-    }
-  }
+        // If the build action has been initiated, push it into the Promise bucket.
+        if (changes) {
+          bucket.push(changes);
+        }
+      }
 
-  if ('rollup' in options) {
-    const rollupChanges = processChangedFilesFor(options.rollup, changedFiles, generateRollup);
-    if (rollupChanges) {
-      configSetsToProcess.push(rollupChanges);
-    }
-  }
-
-  if ('postcss' in options) {
-    const postcssChanges = processChangedFilesFor(options.postcss, changedFiles, generatePostCss);
-    if (postcssChanges) {
-      configSetsToProcess.push(postcssChanges);
-    }
-  }
-
-  if ('esbuild' in options) {
-    const esbuildChanges = processChangedFilesFor(options.esbuild, changedFiles, generateEsbuild);
-    if (esbuildChanges) {
-      configSetsToProcess.push(esbuildChanges);
-    }
-  }
+      return bucket;
+    }, []);
 
   return Promise.all(configSetsToProcess);
 };
 
 module.exports = {
-  buildTypes,
   getAllGlobs,
   processChangedFilesFor,
   processChanges,

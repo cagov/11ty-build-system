@@ -37,13 +37,15 @@ const cagovBuildSystem = require('@cagov/11ty-build-system');
 
 module.exports = function(eleventyConfig) {
   eleventyConfig.addPlugin(cagovBuildSystem, {
-    postcss: {
-      file: 'src/css/postcss.config.js',
-      watch: ['src/css/**/*']
-    },
-    rollup: {
-      file: 'src/js/rollup.config.js',
-      watch: ['src/js/**/*']
+    processors: {
+      postcss: {
+        file: 'src/css/postcss.config.js',
+        watch: ['src/css/**/*']
+      },
+      rollup: {
+        file: 'src/js/rollup.config.js',
+        watch: ['src/js/**/*']
+      }
     },
     beforeBuild: () => {
       // Download files, check APIs, etc.
@@ -54,7 +56,38 @@ module.exports = function(eleventyConfig) {
 };
 ```
 
-## PostCSS Configuration
+## Asset Processors
+
+This plugin current supports the following pre-processors for building and bundling your CSS and/or Javascirpt.
+
+* [PostCSS](#postcss)
+* [Sass](#sass)
+* [Rollup](#rollup)
+* [Esbuild](#esbuild)
+
+> Note that you may supply multiple configurations for **any** of the above processors as an array. For example, both of the PostCSS entries in the following example will be honored.
+
+```js
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  processors: {
+    postcss: [
+      {
+        file: 'src/css/postcss.home.config.js',
+        watch: ['src/css/home/**/*']
+      },
+      {
+        file: 'src/css/postcss.page.config.js',
+        watch: [
+          'src/css/page/**/*',
+          'src/css/page-widget/**/*'
+        ]
+      }
+    ]
+  }
+});
+```
+
+## PostCSS
 
 For your CSS needs, this plugin picks up [PostCSS](https://postcss.org/) files.
 
@@ -62,34 +95,16 @@ The following example will process a single `postcss.config.js` file in the `src
 
 ```js
 eleventyConfig.addPlugin(cagovBuildSystem, {
-  postcss: {
-    file: 'src/css/postcss.config.js',
-    watch: ['src/css/**/*']
+  processors: {
+    postcss: {
+      file: 'src/css/postcss.config.js',
+      watch: ['src/css/**/*']
+    }
   }
 });
 ```
 
-If needed, you may process multiple PostCSS config files. Just supply an array of configurations.
-
-```js
-eleventyConfig.addPlugin(cagovBuildSystem, {
-  postcss: [
-    {
-      file: 'src/css/postcss.home.config.js',
-      watch: ['src/css/home/**/*']
-    },
-    {
-      file: 'src/css/postcss.page.config.js',
-      watch: [
-        'src/css/page/**/*',
-        'src/css/page-widget/**/*'
-      ]
-    }
-  ]
-});
-```
-
-Each PostCSS configuration supplied to the plugin accepts the following options.
+### PostCSS Configuration Options
 
 |Name|Description|
 |:--:|:----------|
@@ -134,7 +149,7 @@ PostCSS config files should include the following required fields.
 
 You may also set `map`, `parser`, `syntax`, and/or `stringifier` options as described in the [PostCSS docs](https://postcss.org/api/#resultoptions).
 
-## Rollup Configuration
+## Rollup
 
 For Javascript processing, this plugin provides [Rollup](https://rollupjs.org/).
 
@@ -142,31 +157,16 @@ The following example will process a single `rollup.config.js` file.
 
 ```js
 eleventyConfig.addPlugin(cagovBuildSystem, {
-  rollup: {
-    file: 'src/js/rollup.config.js',
-    watch: ['src/js/**/*']
+  processors: {
+    rollup: {
+      file: 'src/js/rollup.config.js',
+      watch: ['src/js/**/*']
+    }
   }
 });
 ```
 
-Like PostCSS, you may specify multiple Rollup configurations in an array.
-
-```js
-eleventyConfig.addPlugin(cagovBuildSystem, {
-  rollup: [
-    {
-      file: 'src/js/rollup.es5.config.js',
-      watch: ['src/js/polyfills/**/*']
-    },
-    {
-      file: 'src/js/rollup.all.config.js',
-      watch: ['src/js/**/*']
-    }
-  ]
-});
-```
-
-Note the options for Rollup configs.
+### Rollup Configuration Options
 
 |Name|Description|
 |:--:|:----------|
@@ -193,29 +193,29 @@ export default {
 
 Check the [Rollup documentation](https://rollupjs.org/guide/en/#configuration-files) for more details.
 
-## Sass Configuration
+## Sass
 
 For Sass processing, this plugin provides [Dart Sass](https://sass-lang.com/dart-sass).
 
 ```js
 eleventyConfig.addPlugin(cagovBuildSystem, {
-  sass: {
-    watch: ['src/css/**/*'],
-    output: 'docs/css/build/development.css',
-    options: {
-      file: 'src/css/index.scss',
-      includePaths: [ 'src/css' ]
-    },
-    postcss: {
-      file: 'src/css/postcss.built.config.js'
+  processors: {
+    sass: {
+      watch: ['src/css/**/*'],
+      output: 'docs/css/build/development.css',
+      options: {
+        file: 'src/css/index.scss',
+        includePaths: [ 'src/css' ]
+      },
+      postcss: {
+        file: 'src/css/postcss.built.config.js'
+      }
     }
   }
 });
 ```
 
-Like PostCSS and Rollup, you may opt to include multiple Sass configurations via array.
-
-Sass configuration options follow.
+### Sass Configuration Options
 
 |Name|Description|
 |:--:|:----------|
@@ -224,6 +224,33 @@ Sass configuration options follow.
 |**`options`**|Processing options to pass to Dart Sass. See the [Sass JS API documentation](https://sass-lang.com/documentation/js-api/interfaces/LegacyFileOptions) for a full list of options.|
 |**`options.file`**|Path to the source Sass file. See [Sass JS API documentation](https://sass-lang.com/documentation/js-api/interfaces/LegacyFileOptions#file) for more info.|
 |**`postcss`**|A PostCSS configuration for post-processing the Sass output.|
+
+## Esbuild
+
+The plugin now supports [Esbuild](https://esbuild.github.io/).
+
+```js
+eleventyConfig.addPlugin(cagovBuildSystem, {
+  processors: {
+    esbuild: {
+      watch: ['src/js/**/*'],
+      options: {
+        entryPoints: ['src/js/index.js'],
+        bundle: true,
+        minify: true,
+        outfile: 'dist/js/built.js',
+      },
+    }
+  }
+});
+```
+
+### Esbuild Configuration Options
+
+|Name|Description|
+|:--:|:----------|
+|**`watch`**|An array of [glob expressions](https://github.com/isaacs/minimatch) to watch for changes within 11ty's [serve](https://www.11ty.dev/docs/watch-serve/) mode.|
+|**`options`**|Processing options to pass to esbuild. See the [esbuild Build API documentation](https://esbuild.github.io/api/#build-api) for a full list of options.|
 
 ## Run your own code
 
@@ -240,7 +267,7 @@ eleventyConfig.addPlugin(cagovBuildSystem, {
 ## Order of operations
 
 1. The `beforeBuild` callback runs first.
-2. Next, `postcss` and `rollup` configurations run in parallel.
+2. Next, all asset processors run in parallel.
 3. Finally, 11ty performs the rest of its usual build.
 
 ## Running the build

@@ -11,12 +11,17 @@ const { generatePostCss } = require('./postcss.js');
 
 /**
  * @typedef SassConfig
- * @property {string[]} [watch] A list of filepath globs to check for changes during watch modes.
- * @property {string} output A destination filepath for the output file.
- * @property {import("@types/sass").Options} options Dart-Sass processing options.
- *     See https://sass-lang.com/documentation/js-api/interfaces/LegacyFileOptions
- * @property {string} options.file Filepath to the Sass source file.
- * @property {import("./postcss").PostcssConfig} postcss PostCSS config to post-process Sass output.
+ * @property {string[]} [watch]
+ * A list of filepath globs to check for changes during watch modes.
+ * @property {string} output
+ * A destination filepath for the output file.
+ * @property {import("@types/sass").Options} options
+ * Dart-Sass processing options.
+ * See https://sass-lang.com/documentation/js-api/interfaces/LegacyFileOptions
+ * @property {string} options.file
+ * Filepath to the Sass source file.
+ * @property {import("./postcss").PostcssConfig} postcss
+ * PostCSS config to post-process Sass output.
  */
 
 /**

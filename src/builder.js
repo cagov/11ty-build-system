@@ -1,35 +1,24 @@
-const { generatePostCss } = require('./postcss.js');
-const { generateRollup } = require('./rollup.js');
-const { generateSass } = require('./sass.js');
-const { generateEsbuild } = require('./esbuild.js');
-const { copyAll } = require('./content.js');
+const chalk = require('chalk');
+const processors = require('./processors.js');
+const log = require('./log.js');
 
 /**
  * Execute all available build actions: postcss, rollup, etc.
- * @param {import("../index").BuildSystemOptions} options Options provided to this 11ty plugin.
+ * @param {import("../index").ProcessorsConfig} processorsConfig
+ * Options provided to this 11ty plugin.
  */
-const processAll = (options) => {
-  const configsToBuild = [];
-
-  if ('postcss' in options) {
-    configsToBuild.push(generatePostCss(options.postcss));
-  }
-
-  if ('rollup' in options) {
-    configsToBuild.push(generateRollup(options.rollup));
-  }
-
-  if ('sass' in options) {
-    configsToBuild.push(generateSass(options.sass));
-  }
-
-  if ('esbuild' in options) {
-    configsToBuild.push(generateEsbuild(options.esbuild));
-  }
-
-  if ('extraContent' in options) {
-    configsToBuild.push(copyAll(options.extraContent));
-  }
+const processAll = (processorsConfig) => {
+  const configsToBuild = Object.entries(processorsConfig)
+    .reduce((bucket, [processorType, configuration]) => {
+      if (processors[processorType]) {
+        bucket.push(processors[processorType](configuration));
+      } else {
+        log(chalk.yellow(`${chalk.bold(processorType)} configuration not recognized.`));
+        log(chalk.yellow(`Available options: ${Object.keys(processors).join(', ')}.`));
+        log(chalk.yellow('Check your @cagov/11ty-build-system plugin settings in your .eleventy.js file.'));
+      }
+      return bucket;
+    }, []);
 
   return Promise.all(configsToBuild);
 };
