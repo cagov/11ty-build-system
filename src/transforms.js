@@ -1,9 +1,9 @@
 const htmlmin = require('html-minifier');
 
-const minifyHTML = (html) => {
+const minifyHTML = (html, outputPath) => {
   let processedHTML = html;
 
-  if (!this.outputPath || this.outputPath.endsWith('.html')) {
+  if (!outputPath || outputPath.endsWith('.html')) {
     processedHTML = htmlmin.minify(processedHTML, {
       useShortDoctype: true,
       removeComments: true,
