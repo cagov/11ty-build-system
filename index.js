@@ -56,6 +56,8 @@ const eleventyBuildSystem = (eleventyConfig, buildSystemConfig = {}) => {
 
   // Add transforms.
   eleventyConfig.addTransform('htmlMinifier', transforms.minifyHTML);
+  // Need to make image conversion toggle-able.
+  eleventyConfig.addTransform('convertImg', transforms.convertImg);
 
   // Add all watch configs into 11ty.
   if (buildSystemConfig?.processors) {
