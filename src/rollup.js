@@ -1,6 +1,6 @@
 const path = require('path');
 const rollup = require('rollup');
-const loadConfigFile = require('rollup/dist/loadConfigFile');
+const loadConfigFile = require('rollup/dist/loadConfigFile.js');
 const chalk = require('chalk');
 const normalize = require('./normalize.js');
 const log = require('./log.js');
